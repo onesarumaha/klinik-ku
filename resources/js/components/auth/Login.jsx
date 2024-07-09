@@ -1,6 +1,38 @@
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useCsrf } from '../CsrfContext';
+import $ from 'jquery';
 function Page() {
+ 
+    const csrfToken = useCsrf();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+            const email = $('#yourEmail').val();
+            const password = $('#yourPassword').val();
+
+            axios.post('/login', {
+                email: email,
+                password: password,
+                _token: csrfToken
+            })
+            .then(response => {
+                alert('Login successful');
+                navigate('/dashboard');
+            })
+            .catch(error => {
+                console.error('There was an error logging in!', error);
+            });
+        });
+
+        return () => {
+            $('#loginForm').off('submit');
+        };
+    }, [csrfToken, navigate]);
+
+
     return (
         <>
             <main>
@@ -19,16 +51,12 @@ function Page() {
                                         <div className="card-body">
                                             <div className="pt-4 pb-2">
                                                 <h5 className="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                                                <p className="text-center small">Enter your username & password to login</p>
+                                                <p className="text-center small">Enter your Email & password to login</p>
                                             </div>
-                                            <form className="row g-3 needs-validation" noValidate>
+                                            <form className="row g-3 needs-validation" method='POST' id='loginForm' noValidate>
                                                 <div className="col-12">
-                                                    <label htmlFor="yourUsername" className="form-label">Username</label>
-                                                    <div className="input-group has-validation">
-                                                        <span className="input-group-text" id="inputGroupPrepend">@</span>
-                                                        <input type="text" name="username" className="form-control" id="yourUsername" required />
-                                                        <div className="invalid-feedback">Please enter your username.</div>
-                                                    </div>
+                                                    <label htmlFor="yourEmail" className="form-label">Email</label>
+                                                    <input type="text" name="email" className="form-control" id="yourEmail" required />
                                                 </div>
                                                 <div className="col-12">
                                                     <label htmlFor="yourPassword" className="form-label">Password</label>
@@ -42,7 +70,7 @@ function Page() {
                                                     </div>
                                                 </div>
                                                 <div className="col-12">
-                                                    <Link to="/dashboard" className="btn btn-primary w-100" type="submit">Login</Link>
+                                                    <button className="btn btn-primary w-100" type="submit">Login</button>
                                                 </div>
                                                 <div className="col-12">
                                                     <p className="small mb-0">Don't have account? <Link to="/pages-register">Create an account</Link></p>
